@@ -47,13 +47,21 @@ databaseModule.config(
                 abstract: true
             }).
             state('secure.home', {
-                url: "/home",
+                url: "/home/:rdr",
                 templateUrl: "partials/form_home.html",
                 controller: 'homeCtrl',
                 data : { pageTitle: 'Home' },
                 resolve: {
-                    forms: function(formService) {
-                        return formService.getMyForms();
+                    forms: function(formService, $stateParams, $state) {
+                        if(eval($stateParams.rdr))
+                            return formService.getMyForms().then(function(data){
+                                if(data && data.length >0)
+                                    $state.go('form', {id: data[0].id});
+                                else
+                                    return data;
+                            });
+                        else
+                            return formService.getMyForms();
                     }
                 },
                 authenticate: true

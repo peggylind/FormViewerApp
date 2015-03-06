@@ -7,7 +7,7 @@ formBuilderController.controller('loginCtrl', ['$scope', 'Auth', '$state', 'ngNo
         $scope.form_id = $stateParams.form_id;
         if($scope.isAuthenticated() === true) {
             //Point 'em to logged in page of app
-            $state.go('secure.home');
+            $state.go('secure.home', {rdr: true});
         }
 
         //we need to put the salt on server + client side and it needs to be static
@@ -21,7 +21,7 @@ formBuilderController.controller('loginCtrl', ['$scope', 'Auth', '$state', 'ngNo
                     $scope.loginResult = result;
                     ngNotify.set("Login success!", "success");
                     Auth.confirmCredentials();
-                    if ($scope.form_id) $state.go('form', {id: $scope.form_id}); else $state.go('secure.home');
+                    if ($scope.form_id) $state.go('form', {id: $scope.form_id}); else $state.go('secure.home', {rdr: true});
                 }, function() {
                     ngNotify.set("Login failure, please try again!", "error");
                     $scope.loginMsg = "Arghhh, matey! Check your username or password.";
