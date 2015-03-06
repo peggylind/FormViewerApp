@@ -13,7 +13,7 @@
         <p>There are no forms at this time, please check back later.</p>
     </div>
     <ul class="list-group">
-        <li ng-repeat="form in myForms | filter: {name: query}" class="list-group-item clearfix" ui-sref="form({'id':{{form.id}}})">
+        <li ng-repeat="form in myForms" class="list-group-item clearfix" ui-sref="form({'id':{{form.id}}})">
             <span style="font-size:1.25em;">{{form.name}}</span>
             <!--<span class="pull-right">
                 <button type="button" class="btn btn-default" ui-sref="secure.response({'id':{{form.id}}})" title="Responses"><span class="glyphicon glyphicon-inbox"></span></button>
