@@ -351,8 +351,8 @@ formBuilderController.controller('builderCtrl', ['$scope', '$builder', '$validat
         }
     }]);
 
-formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator', '$stateParams', 'form', '$filter', 'responseService', '$state', 'ngNotify',
-    function($scope, $builder, $validator, $stateParams, form, $filter, responseService, $state, ngNotify) {
+formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator', '$stateParams', 'form', '$filter', 'responseService', '$state', 'ngNotify', '$interval', 'formService',
+    function($scope, $builder, $validator, $stateParams, form, $filter, responseService, $state, ngNotify, $interval, formService) {
         $scope.id = $stateParams.id;
         $scope.$parent.form_obj = form;
         $builder.forms[$scope.id] = null;
@@ -386,6 +386,20 @@ formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator'
                 ngNotify.set("Form submission error, please verify form contents.", "error");
             });
         };
+
+        var forms = [];
+        $scope.updateForms = function () {
+            formService.getMyForms().then(function(data) {
+                if(forms.length !== 0 && data.length > forms.length){
+                    var URL = "#/form/" + data[0].id;
+                    ngNotify.set('New form available. <a href="' + URL +'">Click Here to View.</a>', {sticky: true, type: 'success'});
+                }
+                forms = data;
+            });
+        };
+        $interval(function() {
+            $scope.updateForms();
+        }, 5000);
     }]);
 
 formBuilderController.controller('uploadCtrl',
