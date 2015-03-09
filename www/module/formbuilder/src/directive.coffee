@@ -181,9 +181,20 @@ angular.module 'builder.directive', [
                 The delete event of the popover.
                 ###
                 $event.preventDefault()
-
-                $builder.removeFormObject scope.$parent.formName, scope.$parent.$index
-                $(element).popover 'hide'
+                bootbox.dialog
+                    title: 'Delete'
+                    message: 'Are you sure? Deleting will cause data loss!'
+                    buttons:
+                        success:
+                            label: 'Cancel'
+                            className: 'btn-default'
+                        danger:
+                            label: 'Delete'
+                            className: 'btn-danger'
+                            callback: ->
+                                scope.$apply ->
+                                    $builder.removeFormObject scope.$parent.formName, scope.$parent.$index
+                                    $(element).popover 'hide'
                 return
             shown: ->
                 ###
@@ -355,17 +366,20 @@ angular.module 'builder.directive', [
             scope.inputArray = []
             # watch (end-user updated input of the form
             scope.$watch 'inputArray', (newValue, oldValue) ->
+#                console.log("change in array", scope.inputArray);
                 # array input, like checkbox
                 return if newValue is oldValue
                 checked = []
-                for index of scope.inputArray when scope.inputArray[index]
-                    checked.push scope.options[index]
-                if scope.checked and scope.checked[0] != undefined
+                if scope.options and scope.options.length > 0
+                    for index of scope.inputArray when scope.inputArray[index]
+                        checked.push scope.options[index]
                     scope.inputText = checked.join ', '
                 else
                     scope.inputText = scope.inputArray.join ', '
             , yes
-        scope.$watch 'inputText', -> scope.updateInput scope.inputText
+        scope.$watch 'inputText', ->
+#            console.log("change in text", scope.inputText);
+            scope.updateInput scope.inputText
         # watch (management updated form objects
         scope.$watch attrs.fbFormObject, ->
             scope.copyObjectToScope scope.formObject

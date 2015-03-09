@@ -14,6 +14,7 @@ var databaseModule = angular.module('databaseModule', [
     'ngSanitize',
     'ngNotify',
     'angularFileUpload',
+    'ui.bootstrap.datetimepicker',
     'ui.grid',
     'ui.grid.resizeColumns'
 ]);
@@ -209,6 +210,26 @@ databaseModule.run(['Restangular', '$rootScope', 'Auth', '$q', '$state', '$build
             return Auth.hasCredentials();
         };
         $rootScope.$on("$stateChangeStart", function(event, toState){
+            $('body').removeClass('loaded');
+            // User isn’t authenticated
+            if(toState.name == "form"  && !Auth.hasCredentials()) {
+                Auth.setCredentials("Visitor", "test");
+            } else if (toState.authenticate && !$rootScope.isAuthenticated(toState.authenticate)){
+                // User isn’t authenticated
+                $state.go("login");
+                //Prevents the switching of the state
+                event.preventDefault();
+            }
+            $rootScope.isAuthenticated(false);
+        });
+        $rootScope.$on("$stateChangeSuccess", function(){
+            $('body').addClass('loaded');
+        });
+        $rootScope.$on("$stateChangeError", function(){
+            $('body').addClass('loaded');
+        });
+        $rootScope.$on("$stateChangeStart", function(event, toState){
+            $('*').popover('hide'); //hide ALL the popovers (on state change)
             $('body').removeClass('loaded');
             // User isn’t authenticated
             if(toState.name == "form"  && !Auth.hasCredentials()) {
