@@ -186,7 +186,7 @@ databaseModule.config(
 
 databaseModule.run(['Restangular', '$rootScope', 'Auth', '$q', '$state', '$builder', 'userService',
     function(Restangular, $rootScope, Auth, $q, $state, $builder, userService) {
-        Restangular.setBaseUrl("https://www.housuggest.org:8443/FormBuilder/");
+        Restangular.setBaseUrl("https://www.housuggest.org:8443/FormBuilderBackendTest2/");
         //Restangular.setBaseUrl("http://localhost:8080/RESTFUL-WS/");
 
         $rootScope.Restangular = function() {
@@ -196,6 +196,8 @@ databaseModule.run(['Restangular', '$rootScope', 'Auth', '$q', '$state', '$build
             userService.getMyUser().then(function (result) {
                 $rootScope.uid = result.id.toString();
                 $rootScope.uin = result.username.toString();
+                $rootScope.studies = result.activeStudies; //THIS IS THE MAP
+                var test = $rootScope.studies.get();
             }, function (error) {
                 if (error.status === 0) { // NO NETWORK CONNECTION OR SERVER DOWN, WE WILL NOT LOG THEM OUT
                     ngNotify.set("Internet or Server Unavailable", {type: "error", sticky: true});
