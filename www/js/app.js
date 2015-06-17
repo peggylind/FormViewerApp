@@ -62,7 +62,7 @@ databaseModule.config(
                                     $state.go('form', {id: data[0].id});
                             });
                         } else {
-                            return formService.getMyForms().then(function(data){
+                            return formService.getForm($rootScope.formArray[0]).then(function(data){
                                 return data;
                             });
                         }
@@ -197,7 +197,10 @@ databaseModule.run(['Restangular', '$rootScope', 'Auth', '$q', '$state', '$build
                 $rootScope.uid = result.id.toString();
                 $rootScope.uin = result.username.toString();
                 $rootScope.studies = result.activeStudies; //THIS IS THE MAP
-                var test = $rootScope.studies.get();
+                $rootScope.formsArray = new Array();
+                for(var key in $rootScope.studies){
+                    formsArray.push($rootScope.studies[key]);
+                };
             }, function (error) {
                 if (error.status === 0) { // NO NETWORK CONNECTION OR SERVER DOWN, WE WILL NOT LOG THEM OUT
                     ngNotify.set("Internet or Server Unavailable", {type: "error", sticky: true});
