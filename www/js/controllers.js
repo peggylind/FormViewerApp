@@ -2,8 +2,8 @@
 /* Controllers */
 var formBuilderController = angular.module('formBuilderControllerModule', []);
 
-formBuilderController.controller('loginCtrl', ['$scope', 'Auth', '$state', 'ngNotify', '$stateParams',
-    function($scope, Auth, $state, ngNotify, $stateParams) {
+formBuilderController.controller('loginCtrl', ['$scope', '$rootScope', 'Auth', '$state', 'ngNotify', '$stateParams',
+    function($scope, $rootScope, Auth, $state, ngNotify, $stateParams) {
         $scope.form_id = $stateParams.form_id;
         if($scope.isAuthenticated() === true) {
             //Point 'em to logged in page of app
@@ -21,7 +21,17 @@ formBuilderController.controller('loginCtrl', ['$scope', 'Auth', '$state', 'ngNo
                     $scope.loginResult = result;
                     ngNotify.set("Login success!", "success");
                     Auth.confirmCredentials();
-                    if ($scope.form_id) $state.go('form', {id: $scope.form_id}); else $state.go('secure.home', {rdr: true});
+                    $scope.studies = result.activeStudies; //THIS IS THE MAP
+                    $scope.formsArray = new Array();
+                    for(var key in $rootScope.studies){
+                        $scope.formsArray.push($scope.studies[key]);
+                    };
+                    if ($scope.form_id){
+                        $state.go('form', {id: $scope.form_id}); 
+                    }
+                    else{ 
+                        $state.go('secure.home', {rdr: true, id: $scope.formsArray[0]});
+                    }
                 }, function() {
                     ngNotify.set("Login failure, please try again!", "error");
                     $scope.loginMsg = "Arghhh, matey! Check your username or password.";

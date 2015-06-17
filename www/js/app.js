@@ -48,21 +48,22 @@ databaseModule.config(
                 abstract: true
             }).
             state('secure.home', {
-                url: "/home/:rdr",
+                url: "/home/:rdr/:id",
                 templateUrl: "partials/form_home.html",
                 controller: 'homeCtrl',
                 data : { pageTitle: 'Home' },
                 resolve: {
                     forms: function(formService, $stateParams, $state) {
+                        
                         if (eval($stateParams.rdr)) {
-                            return formService.getMyForms().then(function (data) {
+                            return formService.getForm($stateParams.id).then(function (data) {
                                 if (!data && !data.length > 0)
                                     return data;
                                 else
                                     $state.go('form', {id: data[0].id});
                             });
                         } else {
-                            return formService.getForm($rootScope.formArray[0]).then(function(data){
+                            return formService.getForm($stateParams.id).then(function(data){
                                 return data;
                             });
                         }
@@ -199,7 +200,7 @@ databaseModule.run(['Restangular', '$rootScope', 'Auth', '$q', '$state', '$build
                 $rootScope.studies = result.activeStudies; //THIS IS THE MAP
                 $rootScope.formsArray = new Array();
                 for(var key in $rootScope.studies){
-                    formsArray.push($rootScope.studies[key]);
+                    $rootScope.formsArray.push($rootScope.studies[key]);
                 };
             }, function (error) {
                 if (error.status === 0) { // NO NETWORK CONNECTION OR SERVER DOWN, WE WILL NOT LOG THEM OUT
