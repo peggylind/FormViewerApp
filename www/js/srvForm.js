@@ -19,14 +19,20 @@ fbService.factory('userService', ['Restangular', '$q', '$filter', function(Resta
 
 fbService.factory('formService', ['Restangular', '$filter', function(Restangular, $filter) {
     return {
-        getMyForms:
-            function() {
-                return Restangular.all("forms").customGETLIST("myForms", {numberOfForms: 999999999}).then(function(data){
-                    return data.plain();
-                });
-            },
-        getForm:
-            function(fid) {
+        getMyForms: function() {
+                            return Restangular.all("forms").customGET("myForms", {numberOfForms: 999999999}).then(function (data) {
+                data = data.plain();
+                var data_keys = Object.keys(data);
+                var output = [];
+                for(var i = 0; i < data_keys.length; i++) {
+                    var form = JSON.parse(data_keys[i]);
+                    form.perms = data_keys[i];
+                    output.push(form);
+                }
+                return output;
+            });
+        },
+        getForm: function(fid) {
                 var service = this;
                 return Restangular.all("forms").one(fid).get().then(function(success){
                     var form = Restangular.stripRestangular(success);
@@ -38,8 +44,7 @@ fbService.factory('formService', ['Restangular', '$filter', function(Restangular
                     return form;
                 });
             },
-        newForm:
-            function(form_name, questions) {
+        newForm: function(form_name, questions) {
                 var service = this;
                 var newFormObj = {};
                 newFormObj.name = form_name;
