@@ -2,12 +2,14 @@
 /* Controllers */
 var formBuilderController = angular.module('formBuilderControllerModule', []);
 
-formBuilderController.controller('loginCtrl', ['$scope', '$rootScope', 'Auth', '$state', 'ngNotify', '$stateParams',
-    function($scope, $rootScope, Auth, $state, ngNotify, $stateParams) {
+formBuilderController.controller('loginCtrl', ['$scope', 'Auth', '$state', 'ngNotify', '$stateParams',
+    function($scope, Auth, $state, ngNotify, $stateParams) {
         $scope.form_id = $stateParams.form_id;
-        if($scope.isAuthenticated() === true) {
+        if ($scope.isAuthenticated() === true) {
             //Point 'em to logged in page of app
-            $state.go('secure.home', {rdr: true});
+            $state.go('secure.home', {
+                rdr: true
+            });
         }
 
         //we need to put the salt on server + client side and it needs to be static
@@ -23,15 +25,16 @@ formBuilderController.controller('loginCtrl', ['$scope', '$rootScope', 'Auth', '
                     Auth.confirmCredentials();
                     $scope.studies = result.activeStudies; //THIS IS THE MAP
                     $scope.formsArray = new Array();
-                    for(var key in $rootScope.studies){
+                    for (var key in $scope.studies) {
                         $scope.formsArray.push($scope.studies[key]);
                     };
-                    if ($scope.form_id){
-                        $state.go('form', {id: $scope.form_id}); 
-                    }
-                    else{ 
-                        $state.go('secure.home', {rdr: true, id: $scope.formsArray[0]});
-                    }
+                    $scope.form_id = $scope.formsArray[0];
+                    if ($scope.form_id) $state.go('form', {
+                        id: $scope.form_id
+                    });
+                    else $state.go('secure.home', {
+                        rdr: true
+                    }); //TODO: Create new state that says "You have no forms to respond to."
                 }, function() {
                     ngNotify.set("Login failure, please try again!", "error");
                     $scope.loginMsg = "Arghhh, matey! Check your username or password.";
@@ -39,7 +42,7 @@ formBuilderController.controller('loginCtrl', ['$scope', '$rootScope', 'Auth', '
                 });
                 $scope.userName = '';
                 $scope.passWord = '';
-            } else if(!$scope.userName && !$scope.passWord) {
+            } else if (!$scope.userName && !$scope.passWord) {
                 $scope.loginMsg = "You kiddin' me m8? No username or password?";
             } else if (!$scope.userName) {
                 $scope.loginMsg = "No username? Tryina hack me?";
@@ -49,28 +52,35 @@ formBuilderController.controller('loginCtrl', ['$scope', '$rootScope', 'Auth', '
                 $scope.loginResult = "";
             }
         };
-    }]);
+    }
+]);
 
 formBuilderController.controller('registerCtrl', ['$scope', '$state', 'Auth', 'ngNotify', '$stateParams',
     function($scope, $state, Auth, ngNotify, $stateParams) {
         $scope.registerUser = function() {
             var errorMSG;
-            if($scope.password.pw == $scope.password.pwc) {
+            if ($scope.password.pw == $scope.password.pwc) {
                 Auth.setCredentials("Visitor", "test");
                 $scope.salt = "nfp89gpe";
                 $scope.register.password = String(CryptoJS.SHA512($scope.password.pw + $scope.register.username + $scope.salt));
                 $scope.$parent.Restangular().all("users").post($scope.register).then(
-                    function () {
+                    function() {
                         Auth.clearCredentials();
                         ngNotify.set("Registration success!", "success");
-                        $state.go("login", {"form_id":$stateParams.form_id}, {reload: true});
-                    }, function (error) {
+                        $state.go("login", {
+                            "form_id": $stateParams.form_id
+                        }, {
+                            reload: true
+                        });
+                    },
+                    function(error) {
                         errorMSG = "Registration Failure!";
                         if (error.status == 409)
                             errorMSG = "Account with e-mail address already exists!";
                         ngNotify.set(errorMSG, "error");
                         Auth.clearCredentials();
-                    }, function () {
+                    },
+                    function() {
                         $scope.register = null;
                         $scope.password = null;
                     }
@@ -81,22 +91,27 @@ formBuilderController.controller('registerCtrl', ['$scope', '$state', 'Auth', 'n
                 ngNotify.set(errorMSG, "error");
             }
         }
-    }]);
+    }
+]);
 
 formBuilderController.controller('homeCtrl', ['$scope', 'Auth', '$state', 'formService', 'ngNotify', 'forms',
     function($scope, Auth, $state, formService, ngNotify, forms) {
         $scope.state = $state;
         $scope.myForms = forms;
-    }]);
+    }
+]);
 
 formBuilderController.controller('menuCtrl', ['$scope', 'Auth', 'ngNotify', '$state',
     function($scope, Auth, ngNotify, $state) {
         $scope.logOut = function() {
             Auth.clearCredentials();
             ngNotify.set("Successfully logged out!", "success");
-            $state.go('secure.home',{},{reload: true});
+            $state.go('secure.home', {}, {
+                reload: true
+            });
         }
-    }]);
+    }
+]);
 
 formBuilderController.controller('responseCtrl', ['$scope', 'Auth', '$state', 'formService', 'responseService', '$stateParams', '$filter', 'responses', 'form',
     function($scope, Auth, $state, formService, responseService, $stateParams, $filter, responses, form) {
@@ -106,26 +121,30 @@ formBuilderController.controller('responseCtrl', ['$scope', 'Auth', '$state', 'f
 
         dd.content = [];
         dd.content.push({});
-        dd.content[0] = {text: "Form: " + form.name + "\n\n", alignment: 'center', bold: true};
+        dd.content[0] = {
+            text: "Form: " + form.name + "\n\n",
+            alignment: 'center',
+            bold: true
+        };
 
         $scope.columns = [];
         $scope.filter_dict = {};
         $scope.questions = $scope.form.questions;
-        $scope.questions.forEach(function(q){
+        $scope.questions.forEach(function(q) {
             var q_obj = {};
             q_obj["displayName"] = q.label;
             q_obj["field"] = q.question_id.toString();
             q_obj["width"] = 200;
             //if(q.component !== "description" && q.component !== "section")
-            if(q.component !== "description" && q.component !== "descriptionHorizontal")
+            if (q.component !== "description" && q.component !== "descriptionHorizontal")
                 $scope.columns.push(q_obj);
         });
         var data = [];
-        $scope.responses.forEach(function(response){
+        $scope.responses.forEach(function(response) {
             var entries = response.entries;
             var proc_entries = {};
-            entries.forEach(function(entry){
-                if(entry)
+            entries.forEach(function(entry) {
+                if (entry)
                     proc_entries[entry.question_id.toString()] = entry.value;
             });
             data.push(proc_entries);
@@ -141,17 +160,17 @@ formBuilderController.controller('responseCtrl', ['$scope', 'Auth', '$state', 'f
             columnDefs: $scope.columns
         };
 
-        $scope.getCSV = function(){
+        $scope.getCSV = function() {
             $scope.CSVout = "";
             var questions = $scope.form.questions;
             var questionValueArray = [];
-            questions.forEach(function(question){
+            questions.forEach(function(question) {
                 questionValueArray.push(question.label);
             });
             $scope.CSVout += '"' + questionValueArray.join('","') + '"';
-            $scope.responses.forEach(function(response){
+            $scope.responses.forEach(function(response) {
                 var entries = [];
-                questions.forEach(function(question){
+                questions.forEach(function(question) {
                     var entry = $filter('getByQuestionId')(response.entries, question.question_id);
                     entries.push(entry.value.replace(/"/g, '""'));
                 });
@@ -163,50 +182,68 @@ formBuilderController.controller('responseCtrl', ['$scope', 'Auth', '$state', 'f
             download_button.setAttribute('download', $scope.form.name + "_" + (new Date()).format('mdY\\_His') + ".csv");
             download_button.click();
         };
-        $scope.toPDF = function(){
+        $scope.toPDF = function() {
             var table_loc = 0;
             var questions = $scope.form.questions;
-            $scope.responses.forEach(function(response){
-                table_loc+=2;
-                dd.content.push("",{});
-                dd.content[table_loc - 1] = {text: "Response: #" + response.id, alignment: "center", bold: true};
-                if(table_loc != 2)
+            $scope.responses.forEach(function(response) {
+                table_loc += 2;
+                dd.content.push("", {});
+                dd.content[table_loc - 1] = {
+                    text: "Response: #" + response.id,
+                    alignment: "center",
+                    bold: true
+                };
+                if (table_loc != 2)
                     dd.content[table_loc - 1].pageBreak = 'before';
                 dd.content[table_loc].table = {};
                 dd.content[table_loc].table.widths = [150, '*'];
-                dd.content[table_loc].layout= 'noBorders';
-                dd.content[table_loc].table.body = [[{text: "Questions", alignment: "center", bold: true}, {text: "Responses", alignment: "center", bold: true}]];
+                dd.content[table_loc].layout = 'noBorders';
+                dd.content[table_loc].table.body = [
+                    [{
+                        text: "Questions",
+                        alignment: "center",
+                        bold: true
+                    }, {
+                        text: "Responses",
+                        alignment: "center",
+                        bold: true
+                    }]
+                ];
 
-                questions.forEach(function(question){
+                questions.forEach(function(question) {
                     var entry = $filter('getByQuestionId')(response.entries, question.question_id);
                     dd.content[table_loc].table.body.push([question.label, entry.value]);
                 });
             });
             pdfMake.createPdf(dd).download($scope.form.name + "_" + (new Date()).format('mdY\\_His') + ".pdf");
         }
-    }]);
+    }
+]);
 
 formBuilderController.controller('userResponseCtrl', ['$scope', 'Auth', '$state', 'formService', 'responseService',
     function($scope, Auth, $state, formService, responseService) {
-        responseService.getMyResponses($scope.id).then(function(data){
+        responseService.getMyResponses($scope.id).then(function(data) {
             $scope.responses = data;
         });
-    }]);
+    }
+]);
 
 formBuilderController.controller('finishedCtrl', ['$scope', 'form', '$timeout',
     function($scope, form, $timeout) {
         $scope.form = form;
-        if($scope.form.redirect_url){
-            $timeout(function(){
+        if ($scope.form.redirect_url) {
+            $timeout(function() {
                 location.replace(form.redirect_url);
             }, 5000)
         }
-    }]);
+    }
+]);
 
 formBuilderController.controller('closedCtrl', ['$scope', '$stateParams',
     function($scope, $stateParams) {
         $scope.form = JSON.parse($stateParams.form);
-    }]);
+    }
+]);
 
 formBuilderController.controller('fileDownloadCtrl', ['$scope', '$stateParams', 'ngNotify', 'Restangular',
     function($scope, $stateParams, ngNotify, Restangular) {
@@ -215,24 +252,30 @@ formBuilderController.controller('fileDownloadCtrl', ['$scope', '$stateParams', 
         $scope.download = function(id) {
             Restangular.setFullResponse(true);
             Restangular.all("fileUploads")
-                .withHttpConfig({responseType: 'arraybuffer'}).customGET(id)
+                .withHttpConfig({
+                    responseType: 'arraybuffer'
+                }).customGET(id)
                 .then(
-                function (success) {
-                    var blob = new Blob([success.data], {
-                        type: success.headers("content-type")
-                    });
-                    saveAs(blob, success.headers("file_name"));
-                    Restangular.setFullResponse(false);
-                },
-                function () {
-                    ngNotify.set("Something went wrong while getting the uploaded file!", {position: 'bottom', type: 'error'});
-                    Restangular.setFullResponse(false);
-                }
-            );
+                    function(success) {
+                        var blob = new Blob([success.data], {
+                            type: success.headers("content-type")
+                        });
+                        saveAs(blob, success.headers("file_name"));
+                        Restangular.setFullResponse(false);
+                    },
+                    function() {
+                        ngNotify.set("Something went wrong while getting the uploaded file!", {
+                            position: 'bottom',
+                            type: 'error'
+                        });
+                        Restangular.setFullResponse(false);
+                    }
+                );
         };
 
         $scope.download($scope.id);
-    }]);
+    }
+]);
 
 formBuilderController.controller('formSettingsCtrl', ['$scope', 'Auth', '$state', 'formService', 'responseService', '$stateParams', 'ngNotify', 'form',
     function($scope, Auth, $state, formService, responseService, $stateParams, ngNotify, form) {
@@ -253,11 +296,11 @@ formBuilderController.controller('formSettingsCtrl', ['$scope', 'Auth', '$state'
                         label: "Delete",
                         className: "btn-danger",
                         callback: function() {
-                            formService.deleteForm($scope.id).then(function(){
+                            formService.deleteForm($scope.id).then(function() {
                                     ngNotify.set("Deleted!", "success");
                                     $state.go("secure.home");
                                 },
-                                function(){
+                                function() {
                                     ngNotify.set("Error deleting!", "error");
                                 });
                         }
@@ -279,12 +322,13 @@ formBuilderController.controller('formSettingsCtrl', ['$scope', 'Auth', '$state'
                 }
             });
         };
-        $scope.save = function(){
-            formService.updateForm(String($scope.form.id), $scope.form, $scope.form.questions).then(function () {
+        $scope.save = function() {
+            formService.updateForm(String($scope.form.id), $scope.form, $scope.form.questions).then(function() {
                 ngNotify.set("Form saved!", "success");
             });
         }
-    }]);
+    }
+]);
 
 formBuilderController.controller('builderCtrl', ['$scope', '$builder', '$validator', 'formService', '$stateParams', '$filter', '$state', 'ngNotify', 'form',
     function($scope, $builder, $validator, formService, $stateParams, $filter, $state, ngNotify, form) {
@@ -292,10 +336,10 @@ formBuilderController.controller('builderCtrl', ['$scope', '$builder', '$validat
         $builder.forms['default'] = null;
 
         //IF we are actually editing a previously saved form
-        if($scope.form_id) {
+        if ($scope.form_id) {
             $scope.form_data = form;
             var questions = form.questions;
-            questions.forEach(function(question){
+            questions.forEach(function(question) {
                 $builder.addFormObject('default', {
                     id: question.question_id,
                     component: question.component,
@@ -321,7 +365,7 @@ formBuilderController.controller('builderCtrl', ['$scope', '$builder', '$validat
         }
         $scope.saveButton = function() {
             console.log(form);
-            if($scope.form_id !== 0 && form && form.enabled)
+            if ($scope.form_id !== 0 && form && form.enabled)
                 bootbox.dialog({
                     title: "Save Form",
                     message: "Are you sure? Since this form is open, saving may cause problems with question integrity.",
@@ -343,30 +387,35 @@ formBuilderController.controller('builderCtrl', ['$scope', '$builder', '$validat
                 $scope.save();
         };
         $scope.save = function() {
-            if(!$scope.form_id) {
-                if(!$scope.form_data) {
+            if (!$scope.form_id) {
+                if (!$scope.form_data) {
                     ngNotify.set("Form Name is required!", "error");
                 } else {
-                    formService.newForm($scope.form_data.name, angular.copy($builder.forms['default'])).then(function (response) {
+                    formService.newForm($scope.form_data.name, angular.copy($builder.forms['default'])).then(function(response) {
                         ngNotify.set("Form saved!", "success");
                         $scope.form_id = response.headers("ObjectId");
-                        $state.go("secure.builder", {"id": $scope.form_id}, {"location": false});
+                        $state.go("secure.builder", {
+                            "id": $scope.form_id
+                        }, {
+                            "location": false
+                        });
                     });
                 }
             } else {
-                formService.updateForm($scope.form_id, $scope.form_data, angular.copy($builder.forms['default'])).then(function () {
+                formService.updateForm($scope.form_id, $scope.form_data, angular.copy($builder.forms['default'])).then(function() {
                     ngNotify.set("Form saved!", "success");
                 });
             }
         }
-    }]);
+    }
+]);
 
 formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator', '$stateParams', 'form', '$filter', 'responseService', '$state', 'ngNotify', '$interval', 'formService',
     function($scope, $builder, $validator, $stateParams, form, $filter, responseService, $state, ngNotify, $interval, formService) {
         $scope.id = $stateParams.id;
         $scope.$parent.form_obj = form;
         $builder.forms[$scope.id] = null;
-        form.questions.forEach(function(question){
+        form.questions.forEach(function(question) {
             $builder.addFormObject($scope.id, {
                 id: question.question_id,
                 component: question.component,
@@ -385,11 +434,13 @@ formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator'
         $scope.input = [];
         $scope.submit = function() {
             $validator.validate($scope, $scope.id).success(function() {
-                responseService.newResponse($scope.input, $scope.id, $scope.uid).then(function(){
+                responseService.newResponse($scope.input, $scope.id, $scope.uid).then(function() {
                     ngNotify.set("Form submission success!", "success");
-                    $state.go("finished", {"id": $scope.form_obj.id});
+                    $state.go("finished", {
+                        "id": $scope.form_obj.id
+                    });
                     $scope.input = null;
-                }, function(){
+                }, function() {
                     ngNotify.set("Submission failed!", "error");
                 });
             }).error(function() {
@@ -398,11 +449,14 @@ formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator'
         };
 
         var forms = [];
-        $scope.updateForms = function () {
+        $scope.updateForms = function() {
             formService.getMyForms().then(function(data) {
-                if(forms.length !== 0 && data.length > forms.length){
+                if (forms.length !== 0 && data.length > forms.length) {
                     var URL = "#/form/" + data[0].id;
-                    ngNotify.set('New form available. <a href="' + URL +'">Click Here to View.</a>', {sticky: true, type: 'success'});
+                    ngNotify.set('New form available. <a href="' + URL + '">Click Here to View.</a>', {
+                        sticky: true,
+                        type: 'success'
+                    });
                 }
                 forms = data;
             });
@@ -410,20 +464,21 @@ formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator'
         $interval(function() {
             $scope.updateForms();
         }, 5000);
-    }]);
+    }
+]);
 
 formBuilderController.controller('uploadCtrl',
-    function ($filter, $scope, $http, $timeout, $upload, $stateParams, Restangular, ngNotify, $rootScope) {
+    function($filter, $scope, $http, $timeout, $upload, $stateParams, Restangular, ngNotify, $rootScope) {
         $scope.uploadRightAway = true;
 
-        $scope.hasUploader = function (index) {
+        $scope.hasUploader = function(index) {
             return $scope.upload[index] !== null;
         };
-        $scope.abort = function (index) {
+        $scope.abort = function(index) {
             $scope.upload[index].abort();
             $scope.upload[index] = null;
         };
-        $scope.onFileSelect = function ($files, param) {
+        $scope.onFileSelect = function($files, param) {
             $scope.selectedFiles = [];
             $scope.progress = [];
             if ($scope.upload && $scope.upload.length > 0) {
@@ -448,7 +503,7 @@ formBuilderController.controller('uploadCtrl',
             }
         };
 
-        $scope.start = function (index) {
+        $scope.start = function(index) {
             $scope.progress[index] = 0;
             $scope.errorMsg = null;
             var uploadUrl = Restangular.configuration.baseUrl + '/fileUploads?user_id=' + $rootScope.uid + '&form_id=' + $rootScope.form_obj.id + '&content_type=' + $scope.selectedFiles[index].type;
@@ -457,56 +512,64 @@ formBuilderController.controller('uploadCtrl',
                 file: $scope.selectedFiles[index],
                 fileName: $scope.fileName
             });
-            $scope.upload[index].then(function (response) {
+            $scope.upload[index].then(function(response) {
                 $scope.$parent.inputText = response.headers("ObjectId");
                 $scope.inputId = response.headers("ObjectId");
-                $timeout(function () {
+                $timeout(function() {
                     $scope.uploadResult.push(response.data);
                 });
-            }, function (response) {
+            }, function(response) {
                 if (response.status > 0) $scope.errorMsg = response.status + ': ' + response.data;
-            }, function (evt) {
+            }, function(evt) {
                 $scope.progress[index] = Math.min(100, parseInt(100.0 * evt.loaded / evt.total));
             });
-            $scope.upload[index].xhr(function (xhr) { });
+            $scope.upload[index].xhr(function(xhr) {});
         };
 
-        $scope.deleteFile = function (id) {
+        $scope.deleteFile = function(id) {
             Restangular.all("fileUploads").one(id).remove({}).then(
-                function () {
+                function() {
                     $scope.inputId = null;
                     $scope.inputText = null;
                     $scope.$parent.inputText = null;
-                    ngNotify.set("Deleted!", {position: 'bottom', type: 'success'});
+                    ngNotify.set("Deleted!", {
+                        position: 'bottom',
+                        type: 'success'
+                    });
                 },
-                function () {
-                    ngNotify.set("Could not delete your file on server.", {position: 'bottom', type: 'error'});
+                function() {
+                    ngNotify.set("Could not delete your file on server.", {
+                        position: 'bottom',
+                        type: 'error'
+                    });
                 }
             );
         };
 
         $scope.download = function(id) {
-            if(id.toString() === "[object File]"){
+            if (id.toString() === "[object File]") {
                 id = $scope.inputId;
             }
             Restangular.setFullResponse(true);
             Restangular.all("fileUploads")
-                .withHttpConfig({responseType: 'arraybuffer'}).customGET(id)
+                .withHttpConfig({
+                    responseType: 'arraybuffer'
+                }).customGET(id)
                 .then(
-                function (success) {
-                    var blob = new Blob([success.data], {
-                        type: success.headers("content-type")
-                    });
-                    saveAs(blob, success.headers("file_name"));
-                    Restangular.setFullResponse(false);
-                },
-                function () {
-                    ngNotify.set("Something went wrong while getting the uploaded file!", {
-                        position: 'bottom',
-                        type: 'error'
-                    });
-                    Restangular.setFullResponse(false);
-                }
-            );
+                    function(success) {
+                        var blob = new Blob([success.data], {
+                            type: success.headers("content-type")
+                        });
+                        saveAs(blob, success.headers("file_name"));
+                        Restangular.setFullResponse(false);
+                    },
+                    function() {
+                        ngNotify.set("Something went wrong while getting the uploaded file!", {
+                            position: 'bottom',
+                            type: 'error'
+                        });
+                        Restangular.setFullResponse(false);
+                    }
+                );
         }
     });

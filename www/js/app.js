@@ -22,189 +22,232 @@ databaseModule.config(
     function($stateProvider, $urlRouterProvider) {
         $urlRouterProvider.otherwise("/login/");
         $stateProvider.
-            state('login', {
-                url: "/login/:form_id",
-                views: {
-                    "app": { templateUrl: "partials/login.html", controller: "loginCtrl"}
+        state('login', {
+            url: "/login/:form_id",
+            views: {
+                "app": {
+                    templateUrl: "partials/login.html",
+                    controller: "loginCtrl"
+                }
+            },
+            data: {
+                pageTitle: 'Login'
+            },
+            authenticate: false
+        }).
+        state('register', {
+            url: "/register/:form_id",
+            views: {
+                "app": {
+                    templateUrl: "partials/register.html",
+                    controller: "registerCtrl"
+                }
+            },
+            data: {
+                pageTitle: 'Register'
+            },
+            authenticate: false
+        }).
+        state('secure', {
+            url: "/secure",
+            views: {
+                "menu_view@secure": {
+                    templateUrl: "partials/menuBar.html",
+                    controller: "menuCtrl"
                 },
-                data : { pageTitle: 'Login' },
-                authenticate: false
-            }).
-            state('register', {
-                url: "/register/:form_id",
-                views: {
-                    "app": { templateUrl: "partials/register.html", controller: "registerCtrl"}
-                },
-                data : { pageTitle: 'Register' },
-                authenticate: false
-            }).
-            state('secure', {
-                url: "/secure",
-                views: {
-                    "menu_view@secure": { templateUrl: "partials/menuBar.html", controller: "menuCtrl"},
-                    "app": { templateUrl: "partials/home.html"}
-                },
-                data : { pageTitle: 'Home' },
-                abstract: true
-            }).
-            state('secure.home', {
-                url: "/home/:rdr/:id",
-                templateUrl: "partials/form_home.html",
-                controller: 'homeCtrl',
-                data : { pageTitle: 'Home' },
-                resolve: {
-                    forms: function(formService, $stateParams, $state) {
-                        
-                        if (eval($stateParams.rdr)) {
-                            return formService.getForm($stateParams.id).then(function (data) {
-                                if (!data && !data.length > 0)
-                                    return data;
-                                else
-                                    $state.go('form', {id: data[0].id});
-                            });
-                        } else {
-                            return formService.getForm($stateParams.id).then(function(data){
+                "app": {
+                    templateUrl: "partials/home.html"
+                }
+            },
+            data: {
+                pageTitle: 'Home'
+            },
+            abstract: true
+        }).
+        state('secure.home', {
+            url: "/home/:rdr",
+            templateUrl: "partials/form_home.html",
+            controller: 'homeCtrl',
+            data: {
+                pageTitle: 'Home'
+            },
+            resolve: {
+                forms: function(formService, $stateParams, $state) {
+                    if (eval($stateParams.rdr)) {
+                        return formService.getMyForms().then(function(data) {
+                            if (!data && !data.length > 0)
                                 return data;
-                            });
-                        }
-                    }
-                },
-                authenticate: true
-            }).
-            state('secure.builder', {
-                url: "/builder/:id",
-                templateUrl: "partials/formbuilder.html",
-                controller: 'builderCtrl',
-                data : { pageTitle: 'Builder' },
-                resolve: {
-                    form: function(formService, $stateParams) {
-                        if($stateParams.id)
-                            return formService.getForm($stateParams.id);
-                    }
-                },
-                authenticate: true
-            }).
-            state('secure.form_settings', {
-                url: "/form_settings/:id",
-                templateUrl: "partials/formSettings.html",
-                controller: 'formSettingsCtrl',
-                data : { pageTitle: 'Settings' },
-                resolve: {
-                    form: function(formService, $stateParams) {
-                        return formService.getForm($stateParams.id);
-                    }
-                },
-                authenticate: true
-            }).
-            state('secure.response', {
-                url: "/response/:id",
-                templateUrl: "partials/response.html",
-                controller: 'responseCtrl',
-                resolve: {
-                    form: function(formService, $stateParams) {
-                        return formService.getForm($stateParams.id);
-                    },
-                    responses: function(responseService, $stateParams) {
-                        return responseService.getResponsesByFormId($stateParams.id);
-                    }
-                },
-                data : { pageTitle: 'Responses' },
-                authenticate: true
-            }).
-            state('secure.user_response', {
-                url: "/user_response",
-                templateUrl: "partials/userResponse.html",
-                controller: 'userResponseCtrl',
-                data : { pageTitle: 'Response Form' },
-                authenticate: true
-            }).
-            state('download', {
-                url: "/file/:id",
-                views: {
-                    "app": {
-                        templateUrl: "partials/file.html", controller: "fileDownloadCtrl"
-                    }
-                },
-                data : { pageTitle: 'Download' },
-                authenticate: true
-            }).
-            state('form', {
-                url: "/form/:id",
-                views: {
-                    "menu": {
-                        templateUrl: "partials/menuBar.html",
-                        controller: 'menuCtrl'
-                    },
-                    "app": {
-                        templateUrl: "partials/form.html",
-                        controller: 'formCtrl'
-                    }
-                },
-                resolve: {
-                    form: function(formService, $stateParams, $state) {
-                        return formService.getForm($stateParams.id).then(function(data){
+                            else
+                                $state.go('form', {
+                                    id: data[0].id
+                                });
+                        });
+                    } else {
+                        return formService.getMyForms().then(function(data) {
                             return data;
-                        }, function(data){
-                            console.log(data);
-                            if(new Date() > data.data.expiration_date) {
-                                $state.go('closed', {id: $stateParams.id, form: JSON.stringify(data.data)});
-                            } else if(data.status === 401 && data.data.enabled) {
-                                $state.go('login', {form_id: $stateParams.id});
-                            } else {
-                                $state.go('closed', {id: $stateParams.id, form: JSON.stringify(data.data)});
-                            }
                         });
                     }
-                },
-                data : { pageTitle: 'Form' },
-                authenticate: false
-            }).
-            state('finished', {
-                url: "/finish/:id",
-                views: {
-                    "app": {
-                        templateUrl: "partials/finish.html", controller: "finishedCtrl"
-                    }
-                },
-                resolve: {
-                    form: function(formService, $stateParams) {
+                }
+            },
+            authenticate: true
+        }).
+        state('secure.builder', {
+            url: "/builder/:id",
+            templateUrl: "partials/formbuilder.html",
+            controller: 'builderCtrl',
+            data: {
+                pageTitle: 'Builder'
+            },
+            resolve: {
+                form: function(formService, $stateParams) {
+                    if ($stateParams.id)
                         return formService.getForm($stateParams.id);
-                    }
+                }
+            },
+            authenticate: true
+        }).
+        state('secure.form_settings', {
+            url: "/form_settings/:id",
+            templateUrl: "partials/formSettings.html",
+            controller: 'formSettingsCtrl',
+            data: {
+                pageTitle: 'Settings'
+            },
+            resolve: {
+                form: function(formService, $stateParams) {
+                    return formService.getForm($stateParams.id);
+                }
+            },
+            authenticate: true
+        }).
+        state('secure.response', {
+            url: "/response/:id",
+            templateUrl: "partials/response.html",
+            controller: 'responseCtrl',
+            resolve: {
+                form: function(formService, $stateParams) {
+                    return formService.getForm($stateParams.id);
                 },
-                data : { pageTitle: 'Finished' },
-                authenticate: false
-            }).
-            state('closed', {
-                url: "/close/:id/:form",
-                views: {
-                    "app": {
-                        templateUrl: "partials/closed.html", controller: "closedCtrl"
-                    }
+                responses: function(responseService, $stateParams) {
+                    return responseService.getResponsesByFormId($stateParams.id);
+                }
+            },
+            data: {
+                pageTitle: 'Responses'
+            },
+            authenticate: true
+        }).
+        state('secure.user_response', {
+            url: "/user_response",
+            templateUrl: "partials/userResponse.html",
+            controller: 'userResponseCtrl',
+            data: {
+                pageTitle: 'Response Form'
+            },
+            authenticate: true
+        }).
+        state('download', {
+            url: "/file/:id",
+            views: {
+                "app": {
+                    templateUrl: "partials/file.html",
+                    controller: "fileDownloadCtrl"
+                }
+            },
+            data: {
+                pageTitle: 'Download'
+            },
+            authenticate: true
+        }).
+        state('form', {
+            url: "/form/:id",
+            views: {
+                "menu": {
+                    templateUrl: "partials/menuBar.html",
+                    controller: 'menuCtrl'
                 },
-                authenticate: false
-            });
+                "app": {
+                    templateUrl: "partials/form.html",
+                    controller: 'formCtrl'
+                }
+            },
+            resolve: {
+                form: function(formService, $stateParams, $state) {
+                    return formService.getForm($stateParams.id).then(function(data) {
+                        return data;
+                    }, function(data) {
+                        console.log(data);
+                        if (new Date() > data.data.expiration_date) {
+                            $state.go('closed', {
+                                id: $stateParams.id,
+                                form: JSON.stringify(data.data)
+                            });
+                        } else if (data.status === 401 && data.data.enabled) {
+                            $state.go('login', {
+                                form_id: $stateParams.id
+                            });
+                        } else {
+                            $state.go('closed', {
+                                id: $stateParams.id,
+                                form: JSON.stringify(data.data)
+                            });
+                        }
+                    });
+                }
+            },
+            data: {
+                pageTitle: 'Form'
+            },
+            authenticate: false
+        }).
+        state('finished', {
+            url: "/finish/:id",
+            views: {
+                "app": {
+                    templateUrl: "partials/finish.html",
+                    controller: "finishedCtrl"
+                }
+            },
+            resolve: {
+                form: function(formService, $stateParams) {
+                    return formService.getForm($stateParams.id);
+                }
+            },
+            data: {
+                pageTitle: 'Finished'
+            },
+            authenticate: false
+        }).
+        state('closed', {
+            url: "/close/:id/:form",
+            views: {
+                "app": {
+                    templateUrl: "partials/closed.html",
+                    controller: "closedCtrl"
+                }
+            },
+            authenticate: false
+        });
     });
 
 databaseModule.run(['Restangular', '$rootScope', 'Auth', '$q', '$state', '$builder', 'userService',
     function(Restangular, $rootScope, Auth, $q, $state, $builder, userService) {
-        Restangular.setBaseUrl("https://www.housuggest.org:8443/FormBuilderBackendTest2/");
-        //Restangular.setBaseUrl("http://localhost:8080/RESTFUL-WS/");
+        //Restangular.setBaseUrl("https://www.housuggest.org:8443/FormBuilderBackendTest2/");
+        Restangular.setBaseUrl("http://localhost:8080/RESTFUL-WS/");
 
         $rootScope.Restangular = function() {
             return Restangular;
         };
         $rootScope.isAuthenticated = function(authenticate) {
-            userService.getMyUser().then(function (result) {
+            userService.getMyUser().then(function(result) {
                 $rootScope.uid = result.id.toString();
                 $rootScope.uin = result.username.toString();
-                $rootScope.studies = result.activeStudies; //THIS IS THE MAP
-                $rootScope.formsArray = new Array();
-                for(var key in $rootScope.studies){
-                    $rootScope.formsArray.push($rootScope.studies[key]);
-                };
-            }, function (error) {
+            }, function(error) {
                 if (error.status === 0) { // NO NETWORK CONNECTION OR SERVER DOWN, WE WILL NOT LOG THEM OUT
-                    ngNotify.set("Internet or Server Unavailable", {type: "error", sticky: true});
+                    ngNotify.set("Internet or Server Unavailable", {
+                        type: "error",
+                        sticky: true
+                    });
                 } else { //Most Likely a 403 - LOG THEM OUT
                     if (authenticate) {
                         Auth.clearCredentials();
@@ -215,12 +258,12 @@ databaseModule.run(['Restangular', '$rootScope', 'Auth', '$q', '$state', '$build
             });
             return Auth.hasCredentials();
         };
-        $rootScope.$on("$stateChangeStart", function(event, toState){
+        $rootScope.$on("$stateChangeStart", function(event, toState) {
             $('body').removeClass('loaded');
             // User isn’t authenticated
-            if(toState.name == "form"  && !Auth.hasCredentials()) {
+            if (toState.name == "form" && !Auth.hasCredentials()) {
                 Auth.setCredentials("Visitor", "test");
-            } else if (toState.authenticate && !$rootScope.isAuthenticated(toState.authenticate)){
+            } else if (toState.authenticate && !$rootScope.isAuthenticated(toState.authenticate)) {
                 // User isn’t authenticated
                 $state.go("login");
                 //Prevents the switching of the state
@@ -228,19 +271,19 @@ databaseModule.run(['Restangular', '$rootScope', 'Auth', '$q', '$state', '$build
             }
             $rootScope.isAuthenticated(false);
         });
-        $rootScope.$on("$stateChangeSuccess", function(){
+        $rootScope.$on("$stateChangeSuccess", function() {
             $('body').addClass('loaded');
         });
-        $rootScope.$on("$stateChangeError", function(){
+        $rootScope.$on("$stateChangeError", function() {
             $('body').addClass('loaded');
         });
-        $rootScope.$on("$stateChangeStart", function(event, toState){
+        $rootScope.$on("$stateChangeStart", function(event, toState) {
             $('*').popover('hide'); //hide ALL the popovers (on state change)
             $('body').removeClass('loaded');
             // User isn’t authenticated
-            if(toState.name == "form"  && !Auth.hasCredentials()) {
+            if (toState.name == "form" && !Auth.hasCredentials()) {
                 Auth.setCredentials("Visitor", "test");
-            } else if (toState.authenticate && !$rootScope.isAuthenticated(toState.authenticate)){
+            } else if (toState.authenticate && !$rootScope.isAuthenticated(toState.authenticate)) {
                 // User isn’t authenticated
                 $state.go("login");
                 //Prevents the switching of the state
@@ -248,10 +291,10 @@ databaseModule.run(['Restangular', '$rootScope', 'Auth', '$q', '$state', '$build
             }
             $rootScope.isAuthenticated(false);
         });
-        $rootScope.$on("$stateChangeSuccess", function(){
+        $rootScope.$on("$stateChangeSuccess", function() {
             $('body').addClass('loaded');
         });
-        $rootScope.$on("$stateChangeError", function(){
+        $rootScope.$on("$stateChangeError", function() {
             $('body').addClass('loaded');
         });
 
@@ -334,4 +377,5 @@ databaseModule.run(['Restangular', '$rootScope', 'Auth', '$q', '$state', '$build
             templateUrl: 'partials/component/tmplFileUpload.html',
             popoverTemplateUrl: 'partials/component/popFileUpload.html'
         });
-    }]);
+    }
+]);
