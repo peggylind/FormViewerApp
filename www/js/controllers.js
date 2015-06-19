@@ -6,11 +6,33 @@ formBuilderController.controller('loginCtrl', ['$scope', 'Auth', '$state', 'ngNo
     function($scope, Auth, $state, ngNotify, $stateParams) {
         $scope.form_id = $stateParams.form_id;
         if ($scope.isAuthenticated() === true) {
-            //Point 'em to logged in page of app
-            $state.go('secure.home', {
-                rdr: true
+            $scope.loginResultPromise = $scope.Restangular().all("users").one("myUser").get();
+            $scope.loginResultPromise.then(function(result) {
+                $scope.loginResult = result;
+                Auth.confirmCredentials();
+                $scope.studies = result.activeStudies; //THIS IS THE MAP
+                $scope.formsArray = new Array();
+                $scope.keyArray = new Array();
+                for (var key in $scope.studies) {
+                    $scope.formsArray.push($scope.studies[key]);
+                    $scope.keyArray.push(key);
+                };
+                $scope.activeStudyId = $scope.keyArray[0];
+                $scope.form_id = $scope.formsArray[0];
+                if ($scope.form_id) $state.go('form', {
+                    id: $scope.form_id,
+                    studyId: $scope.activeStudyId
+                });
+                else $state.go('secure.home', {
+                    rdr: true
+                }); //TODO: Create new state that says "You have no forms to respond to."
+            }, function() {
+                ngNotify.set("Login failure, please try again!", "error");
+                $scope.loginMsg = "Arghhh, matey! Check your username or password.";
+                Auth.clearCredentials();
             });
         }
+
 
         //we need to put the salt on server + client side and it needs to be static
         $scope.salt = "nfp89gpe"; //PENDING
@@ -33,7 +55,8 @@ formBuilderController.controller('loginCtrl', ['$scope', 'Auth', '$state', 'ngNo
                     $scope.activeStudyId = $scope.keyArray[0];
                     $scope.form_id = $scope.formsArray[0];
                     if ($scope.form_id) $state.go('form', {
-                        id: $scope.form_id, studyId: $scope.activeStudyId
+                        id: $scope.form_id,
+                        studyId: $scope.activeStudyId
                     });
                     else $state.go('secure.home', {
                         rdr: true
@@ -413,7 +436,7 @@ formBuilderController.controller('builderCtrl', ['$scope', '$builder', '$validat
     }
 ]);
 
-formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator', '$stateParams', 'form', '$filter', 'responseService', '$state', 'ngNotify', '$interval', 'userService', 'formService', 
+formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator', '$stateParams', 'form', '$filter', 'responseService', '$state', 'ngNotify', '$interval', 'userService', 'formService',
     function($scope, $builder, $validator, $stateParams, form, $filter, responseService, $state, ngNotify, $interval, userService, formService) {
         $scope.id = $stateParams.id;
         $scope.$parent.form_obj = form;
