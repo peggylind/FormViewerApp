@@ -25,15 +25,15 @@ formBuilderController.controller('loginCtrl', ['$scope', 'Auth', '$state', 'ngNo
                     Auth.confirmCredentials();
                     $scope.studies = result.activeStudies; //THIS IS THE MAP
                     $scope.formsArray = new Array();
-                    keyArray = new Array();
+                    $scope.keyArray = new Array();
                     for (var key in $scope.studies) {
                         $scope.formsArray.push($scope.studies[key]);
-                        keyArray.push(key);
+                        $scope.keyArray.push(key);
                     };
-                    $rootScope.activeStudyId = keyArray[0];
+                    $scope.activeStudyId = $scope.keyArray[0];
                     $scope.form_id = $scope.formsArray[0];
                     if ($scope.form_id) $state.go('form', {
-                        id: $scope.form_id
+                        id: $scope.form_id, studyId: $scope.activeStudyId
                     });
                     else $state.go('secure.home', {
                         rdr: true
@@ -413,8 +413,8 @@ formBuilderController.controller('builderCtrl', ['$scope', '$builder', '$validat
     }
 ]);
 
-formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator', '$stateParams', 'form', '$filter', 'responseService', '$state', 'ngNotify', '$interval', 'userService', 'formService', '$rootScope',
-    function($scope, $builder, $validator, $stateParams, form, $filter, responseService, $state, ngNotify, $interval, userService, formService, $rootScope) {
+formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator', '$stateParams', 'form', '$filter', 'responseService', '$state', 'ngNotify', '$interval', 'userService', 'formService', 
+    function($scope, $builder, $validator, $stateParams, form, $filter, responseService, $state, ngNotify, $interval, userService, formService) {
         $scope.id = $stateParams.id;
         $scope.$parent.form_obj = form;
         $builder.forms[$scope.id] = null;
@@ -437,7 +437,7 @@ formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator'
         $scope.input = [];
         $scope.submit = function() {
             $validator.validate($scope, $scope.id).success(function() {
-                responseService.newResponse($scope.input, $scope.id, $scope.uid, $rootScope.activeStudyId).then(function() {
+                responseService.newResponse($scope.input, $scope.id, $scope.uid, $stateParams.studyId).then(function() {
                     ngNotify.set("Form submission success!", "success");
                     $state.go("finished", {
                         "id": $scope.form_obj.id

@@ -160,7 +160,7 @@ databaseModule.config(
             authenticate: true
         }).
         state('form', {
-            url: "/form/:id",
+            url: "/form/:id/:studyId",
             views: {
                 "menu": {
                     templateUrl: "partials/menuBar.html",
