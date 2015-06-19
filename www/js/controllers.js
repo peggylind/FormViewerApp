@@ -25,9 +25,12 @@ formBuilderController.controller('loginCtrl', ['$scope', 'Auth', '$state', 'ngNo
                     Auth.confirmCredentials();
                     $scope.studies = result.activeStudies; //THIS IS THE MAP
                     $scope.formsArray = new Array();
+                    keyArray = new Array();
                     for (var key in $scope.studies) {
                         $scope.formsArray.push($scope.studies[key]);
+                        keyArray.push(key);
                     };
+                    $rootScope.activeStudyId = keyArray[0];
                     $scope.form_id = $scope.formsArray[0];
                     if ($scope.form_id) $state.go('form', {
                         id: $scope.form_id
@@ -113,8 +116,8 @@ formBuilderController.controller('menuCtrl', ['$scope', 'Auth', 'ngNotify', '$st
     }
 ]);
 
-formBuilderController.controller('responseCtrl', ['$scope', 'Auth', '$state', 'formService', 'responseService', '$stateParams', '$filter', 'responses', 'form',
-    function($scope, Auth, $state, formService, responseService, $stateParams, $filter, responses, form) {
+formBuilderController.controller('responseCtrl', ['$scope', 'Auth', '$state', 'formService', 'responseService', '$stateParams', '$filter', 'responses', 'form', '$rootScope',
+    function($scope, Auth, $state, formService, responseService, $stateParams, $filter, responses, form, $rootScope) {
         $scope.id = $stateParams.id;
         $scope.responses = responses;
         $scope.form = form;
@@ -410,8 +413,8 @@ formBuilderController.controller('builderCtrl', ['$scope', '$builder', '$validat
     }
 ]);
 
-formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator', '$stateParams', 'form', '$filter', 'responseService', '$state', 'ngNotify', '$interval', 'formService',
-    function($scope, $builder, $validator, $stateParams, form, $filter, responseService, $state, ngNotify, $interval, formService) {
+formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator', '$stateParams', 'form', '$filter', 'responseService', '$state', 'ngNotify', '$interval', 'userService', 'formService', '$rootScope',
+    function($scope, $builder, $validator, $stateParams, form, $filter, responseService, $state, ngNotify, $interval, userService, formService, $rootScope) {
         $scope.id = $stateParams.id;
         $scope.$parent.form_obj = form;
         $builder.forms[$scope.id] = null;
@@ -434,7 +437,7 @@ formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator'
         $scope.input = [];
         $scope.submit = function() {
             $validator.validate($scope, $scope.id).success(function() {
-                responseService.newResponse($scope.input, $scope.id, $scope.uid).then(function() {
+                responseService.newResponse($scope.input, $scope.id, $scope.uid, $rootScope.activeStudyId).then(function() {
                     ngNotify.set("Form submission success!", "success");
                     $state.go("finished", {
                         "id": $scope.form_obj.id
@@ -450,15 +453,15 @@ formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator'
 
         var forms = [];
         $scope.updateForms = function() {
-            formService.getMyForms().then(function(data) {
-                if (forms.length !== 0 && data.length > forms.length) {
-                    var URL = "#/form/" + data[0].id;
+            userService.getMyUser().then(function(data) {
+                if (forms.length !== 0 && data.activeStudies.length > forms.length) {
+                    var URL = "#/form/" + data.activeStudies.id;
                     ngNotify.set('New form available. <a href="' + URL + '">Click Here to View.</a>', {
                         sticky: true,
                         type: 'success'
                     });
                 }
-                forms = data;
+                forms = data.activeStudies;
             });
         };
         $interval(function() {
