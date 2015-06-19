@@ -184,7 +184,7 @@ fbService.factory('responseService', ['Restangular', '$filter', 'formService', f
                 return eval(data);
             });
         },
-        newResponse: function(input, fid, uid) {
+        newResponse: function(input, fid, uid, studyId) {
             var service = this;
             return this.createResponse(fid, uid).then(function(id) {
                 return service.getResponse(id).then(function(response) {
@@ -193,11 +193,11 @@ fbService.factory('responseService', ['Restangular', '$filter', 'formService', f
                         if (inputObj)
                             entryObj.value = inputObj.value;
                     });
-                    return service.updateResponse(id, response);
+                    return service.updateResponse(id, response, studyId);
                 })
             });
         },
-        updateResponse: function(id, form) {
+        updateResponse: function(id, form, studyId) {
             return Restangular.all("formResponses").all(id).doPUT(form);
         },
         deleteResponse: function(rid) {
