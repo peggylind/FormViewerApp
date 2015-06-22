@@ -37,7 +37,7 @@ databaseModule.config(
                 }
                 data: { pageTitle: 'Failed' },
                 authenticate: false
-            }).
+            }). 
             state('register', {
                 url: "/register/:form_id",
                 views: {

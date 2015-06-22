@@ -21,7 +21,10 @@ formBuilderController.controller('loginCtrl', ['$scope', 'Auth', '$state', 'ngNo
                     $scope.loginResult = result;
                     ngNotify.set("Login success!", "success");
                     Auth.confirmCredentials();
-                    if ($scope.form_id) $state.go('form', {id: $scope.form_id}); else $state.go('secure.home', {rdr: true});
+                    if ($scope.form_id)
+                        $state.go('form', {id: $scope.form_id});
+                    else
+                        $state.go('failed', {rdr: true});
                 }, function() {
                     ngNotify.set("Login failure, please try again!", "error");
                     $scope.loginMsg = "Arghhh, matey! Check your username or password.";
