@@ -198,7 +198,7 @@ fbService.factory('responseService', ['Restangular', '$filter', 'formService', f
             });
         },
         updateResponse: function(id, form, studyId) {
-            return Restangular.all("formResponses").all(id).doPUT(form);
+            return Restangular.all("formResponses").all(id).customPUT(form, "", {removeActiveStudy: studyId});
         },
         deleteResponse: function(rid) {
             return Restangular.all("formResponses").one(rid).remove();

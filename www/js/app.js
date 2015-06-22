@@ -65,29 +65,11 @@ databaseModule.config(
             abstract: true
         }).
         state('secure.home', {
-            url: "/home/:rdr",
+            url: "/home",
             templateUrl: "partials/form_home.html",
             controller: 'homeCtrl',
             data: {
                 pageTitle: 'Home'
-            },
-            resolve: {
-                forms: function(formService, $stateParams, $state) {
-                    if (eval($stateParams.rdr)) {
-                        return formService.getMyForms().then(function(data) {
-                            if (!data && !data.length > 0)
-                                return data;
-                            else
-                                $state.go('form', {
-                                    id: data[0].id
-                                });
-                        });
-                    } else {
-                        return formService.getMyForms().then(function(data) {
-                            return data;
-                        });
-                    }
-                }
             },
             authenticate: true
         }).
@@ -232,8 +214,8 @@ databaseModule.config(
 
 databaseModule.run(['Restangular', '$rootScope', 'Auth', '$q', '$state', '$builder', 'userService',
     function(Restangular, $rootScope, Auth, $q, $state, $builder, userService) {
-        //Restangular.setBaseUrl("https://www.housuggest.org:8443/FormBuilderBackendTest2/");
-        Restangular.setBaseUrl("http://localhost:8080/RESTFUL-WS/");
+        Restangular.setBaseUrl("https://www.housuggest.org:8443/FormBuilderBackendTest2/");
+        //Restangular.setBaseUrl("http://localhost:8080/RESTFUL-WS/");
 
         $rootScope.Restangular = function() {
             return Restangular;
