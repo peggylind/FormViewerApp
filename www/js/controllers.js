@@ -257,11 +257,11 @@ formBuilderController.controller('userResponseCtrl', ['$scope', 'Auth', '$state'
 formBuilderController.controller('finishedCtrl', ['$scope', 'form', '$timeout',
     function($scope, form, $timeout) {
         $scope.form = form;
-        if ($scope.form.redirect_url) {
+        /*if ($scope.form.redirect_url) {
             $timeout(function() {
                 location.replace(form.redirect_url);
-            }, 5000)
-        }
+            }, 50000)
+        }*/
     }
 ]);
 
@@ -487,9 +487,9 @@ formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator'
                 forms = data.activeStudies;
             });
         };
-        $interval(function() {
+        /*$interval(function() {
             $scope.updateForms();
-        }, 5000);
+        }, 50000);*/
     }
 ]);
 
