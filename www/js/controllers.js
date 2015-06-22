@@ -58,7 +58,7 @@ formBuilderController.controller('loginCtrl', ['$scope', 'Auth', '$state', 'ngNo
                         id: $scope.form_id,
                         studyId: $scope.activeStudyId
                     });
-                    else $state.go('failed'
+                    else $state.go('secure.home'
                     ); //TODO: Create new state that says "You have no forms to respond to."
                 }, function() {
                     ngNotify.set("Login failure, please try again!", "error");
@@ -79,7 +79,6 @@ formBuilderController.controller('loginCtrl', ['$scope', 'Auth', '$state', 'ngNo
         };
     }
 ]);
-
 formBuilderController.controller('registerCtrl', ['$scope', '$state', 'Auth', 'ngNotify', '$stateParams',
     function($scope, $state, Auth, ngNotify, $stateParams) {
         $scope.registerUser = function() {

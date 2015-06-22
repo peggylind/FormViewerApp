@@ -35,19 +35,6 @@ databaseModule.config(
             },
             authenticate: false
         }).
-        state('failed', {
-            url: "/failed",
-            views: {
-                "app": {
-                    templateUrl: "partials/failed.html",
-                    controller: "failedCtrl"
-                }
-            },
-            data: {
-                pageTitle: 'Failed'
-            },
-            authenticate: false
-        }).
         state('register', {
             url: "/register/:form_id",
             views: {
@@ -78,29 +65,11 @@ databaseModule.config(
             abstract: true
         }).
         state('secure.home', {
-            url: "/home/:rdr",
+            url: "/home",
             templateUrl: "partials/form_home.html",
             controller: 'homeCtrl',
             data: {
                 pageTitle: 'Home'
-            },
-            resolve: {
-                forms: function(formService, $stateParams, $state) {
-                    if (eval($stateParams.rdr)) {
-                        return formService.getMyForms().then(function(data) {
-                            if (!data && !data.length > 0)
-                                return data;
-                            else
-                                $state.go('form', {
-                                    id: data[0].id
-                                });
-                        });
-                    } else {
-                        return formService.getMyForms().then(function(data) {
-                            return data;
-                        });
-                    }
-                }
             },
             authenticate: true
         }).
