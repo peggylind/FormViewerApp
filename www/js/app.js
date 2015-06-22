@@ -35,6 +35,19 @@ databaseModule.config(
             },
             authenticate: false
         }).
+        state('failed', {
+            url: "/failed",
+            views: {
+                "app": {
+                    templateUrl: "partials/failed.html",
+                    controller: "failedCtrl"
+                }
+            },
+            data: {
+                pageTitle: 'Failed'
+            },
+            authenticate: false
+        }).
         state('register', {
             url: "/register/:form_id",
             views: {
