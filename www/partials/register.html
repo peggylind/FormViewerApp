@@ -4,14 +4,12 @@
         <input class="form-control email" type="email" ng-model="register.username" placeholder="E-Mail Address" required>
         <input class="form-control pw1 pw2" type="password" ng-model="password.pw" placeholder="Password" required>
         <input class="form-control pw2 pw" type="password" ng-model="password.pwc" placeholder="Confirm Password" required>
-        <input class="form-control cellPhone" type="number" ng-model="register.cellPhone" placeholder="Cell Phone Number" required>
+        <input class="form-control cellPhone" type="number" ng-model="register.cellPhone" placeholder="Cell Phone Number (optional)">
 
-		<div class="input-label"> Notification Preference </div>
-		<select>
-			<option selected>Email</option>
-			<option>Text</option>
-			<option>Both</option>
-		</select>
+		Notification Preference: <input class="form-control notificationPreference" type="radio" ng-model="register.notificationPreference" value="EMAIL"/>Email
+        <input class="form-control notificationPreference" type="radio" ng-model="register.notificationPreference" value="TEXT" />Text
+        <input class="form-control notificationPreference" type="radio" ng-model="register.notificationPreference" value="BOTH" />Both<br/>
+
 
         <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
     </form>
