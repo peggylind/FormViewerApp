@@ -193,8 +193,21 @@ outline: 0;
 .form-signin .pw2 {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-bottom: -1px;
+}
+.form-signin .cellPhone {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    margin-bottom: 10px;
 }
 
+.form-signin .notificationPreference {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    margin-bottom: 10px;
+}
 /* Progress bar for file upload */
 .progress {
     display: inline-block;
