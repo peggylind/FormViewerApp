@@ -1,6 +1,6 @@
 BUILD_DIR := ./dist
-PROD_REPO = ssh://cholley@dash.hnet.uh.edu/home/webadmin/FormViewer.git
-STAGING_REPO = ssh://cholley@dash.hnet.uh.edu/home/webadmin/FormViewerTest.git
+PROD_REPO = ssh://webadmin@HouSuggest/~/FormViewer.git
+STAGING_REPO = ssh://webadmin@HouSuggest/~FormViewerTest.git
 
 # Deploy tasks
 staging: clean build git-staging deploy
