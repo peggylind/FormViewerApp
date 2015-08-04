@@ -45,21 +45,7 @@ formBuilderController.controller('loginCtrl', ['$scope', 'Auth', '$state', 'ngNo
                     $scope.loginResult = result;
                     ngNotify.set("Login success!", "success");
                     Auth.confirmCredentials();
-                    $scope.studies = result.activeStudies; //THIS IS THE MAP
-                    $scope.formsArray = new Array();
-                    $scope.keyArray = new Array();
-                    for (var key in $scope.studies) {
-                        $scope.formsArray.push($scope.studies[key]);
-                        $scope.keyArray.push(key);
-                    };
-                    $scope.activeStudyId = $scope.keyArray[0];
-                    $scope.form_id = $scope.formsArray[0];
-                    if ($scope.form_id) $state.go('form', {
-                        id: $scope.form_id,
-                        studyId: $scope.activeStudyId
-                    });
-                    else $state.go('secure.home'
-                    ); //TODO: Create new state that says "You have no forms to respond to."
+                    $state.go('secure.home'); //TODO: Create new state that says "You have no forms to respond to."
                 }, function() {
                     ngNotify.set("Login failure, please try again!", "error");
                     $scope.loginMsg = "Arghhh, matey! Check your username or password.";
@@ -118,10 +104,26 @@ formBuilderController.controller('registerCtrl', ['$scope', '$state', 'Auth', 'n
     }
 ]);
 
-formBuilderController.controller('homeCtrl', ['$scope', 'Auth', '$state', 'formService', 'ngNotify', 'forms',
-    function($scope, Auth, $state, formService, ngNotify, forms) {
+//Controller for the home state
+formBuilderController.controller('homeCtrl', ['$scope', 'Auth', '$state', 'formService', '$interval', 'ngNotify', 'userService',
+    function($scope, Auth, $state, formService, $interval, ngNotify, userService) {
         $scope.state = $state;
-        $scope.myForms = forms;
+
+        //This functions checks to see if there is a new form and reloads if there is.
+        $scope.updateForms = function() {
+            userService.getMyUser().then(function(data) {
+                if (Object.keys(data.activeStudies).length !== 0) {
+                    ngNotify.set('New form available. Reloading','success');
+                    $state.reload();
+                }
+            });
+        };
+        $interval(function() {
+            //If we are currently in the home state, call updateForms.
+            //We will only be in the home state if activeStudies is empty
+            if($state.current.name == "secure.home" )
+                $scope.updateForms();
+        }, 300000); //5 minutes = 300,000 milliseconds
     }
 ]);
 
@@ -434,8 +436,8 @@ formBuilderController.controller('builderCtrl', ['$scope', '$builder', '$validat
     }
 ]);
 
-formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator', '$stateParams', 'form', '$filter', 'responseService', '$state', 'ngNotify', '$interval', 'userService', 'formService',
-    function($scope, $builder, $validator, $stateParams, form, $filter, responseService, $state, ngNotify, $interval, userService, formService) {
+formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator', '$stateParams', 'form', '$filter', 'responseService', '$state', 'ngNotify', 'userService', 'formService', '$rootScope',
+    function($scope, $builder, $validator, $stateParams, form, $filter, responseService, $state, ngNotify, userService, formService, $rootScope) {
         $scope.id = $stateParams.id;
         $scope.$parent.form_obj = form;
         $builder.forms[$scope.id] = null;
@@ -460,9 +462,7 @@ formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator'
             $validator.validate($scope, $scope.id).success(function() {
                 responseService.newResponse($scope.input, $scope.id, $scope.uid, $stateParams.studyId).then(function() {
                     ngNotify.set("Form submission success!", "success");
-                    $state.go("finished", {
-                        "id": $scope.form_obj.id
-                    });
+                    $state.go("secure.home");
                     $scope.input = null;
                 }, function() {
                     ngNotify.set("Submission failed!", "error");
@@ -471,23 +471,6 @@ formBuilderController.controller('formCtrl', ['$scope', '$builder', '$validator'
                 ngNotify.set("Form submission error, please verify form contents.", "error");
             });
         };
-
-        var forms = [];
-        $scope.updateForms = function() {
-            userService.getMyUser().then(function(data) {
-                if (forms.length !== 0 && data.activeStudies.length > forms.length) {
-                    var URL = "#/form/" + data.activeStudies.id;
-                    ngNotify.set('New form available. <a href="' + URL + '">Click Here to View.</a>', {
-                        sticky: true,
-                        type: 'success'
-                    });
-                }
-                forms = data.activeStudies;
-            });
-        };
-        /*$interval(function() {
-            $scope.updateForms();
-        }, 50000);*/
     }
 ]);
 
