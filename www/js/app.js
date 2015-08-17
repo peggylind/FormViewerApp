@@ -79,7 +79,7 @@ databaseModule.config(
                     return userService.getMyUser().then(function(data) {
                         $state.go('form', {
                             id: 312
-                        });
+                        },{reload:true});
                     });
                 }
             },
