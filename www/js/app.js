@@ -16,7 +16,8 @@ var databaseModule = angular.module('databaseModule', [
     'angularFileUpload',
     'ui.bootstrap.datetimepicker',
     'ui.grid',
-    'ui.grid.resizeColumns'
+    'ui.grid.resizeColumns',
+    'ngCordova'
 ]);
 databaseModule.config(
     function($stateProvider, $urlRouterProvider) {
@@ -76,21 +77,9 @@ databaseModule.config(
                 //If the map is empty, stay in home, else go to the form.
                 checkForms: function(userService, $state) {
                     return userService.getMyUser().then(function(data) {
-                        var studies = data.activeStudies; //Map of activeForms
-                        var formsArray = new Array();
-                        var keyArray = new Array();
-                        for (var key in studies) {
-                            formsArray.push(studies[key]);
-                            keyArray.push(key);
-                        };
-                        var activeStudyId = keyArray[0];
-                        var form_id = formsArray[0];
-                        if (form_id) {
-                            $state.go('form', {
-                                id: form_id,
-                                studyId: activeStudyId
-                            });
-                        }
+                        $state.go('form', {
+                            id: 312
+                        });
                     });
                 }
             },
@@ -382,5 +371,13 @@ databaseModule.run(['Restangular', '$rootScope', 'Auth', '$q', '$state', '$build
             templateUrl: 'partials/component/tmplFileUpload.html',
             popoverTemplateUrl: 'partials/component/popFileUpload.html'
         });
+        $builder.registerComponent('QRscanner', {
+            group: 'Other',
+            label: 'Scan A QR Code',
+            required: false,
+            templateUrl: 'partials/component/tmplQRscanner.html',
+            popoverTemplateUrl: 'partials/component/popQRscanner.html'
+        });
+
     }
 ]);
